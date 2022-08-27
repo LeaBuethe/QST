@@ -1,3 +1,4 @@
+%function [X,theta,iSelect] = selectRegion(O1,O2,O3,theta,phiSimulation,varargin)
 function [X,theta,iSelect] = selectRegion(O1,O2,O3,theta,varargin)
 %SELECTREGION Return all values of O3 in the specified (O1,O2)-region
 %
@@ -46,21 +47,95 @@ switch type
         y = position(2);
         r = position(3);
         iSelect = find(((O1-x).^2+(O2-y).^2) <= r^2);
+%     case 'phase'
+%         mTheta = position(1);
+%         dTheta = position(2);
+%         husimiPhase = atan2(O2,O1);
+%         iSelect = find(husimiPhase>mTheta-dTheta/2 & ...
+%             husimiPhase<mTheta+dTheta/2 & (O1.^2+O2.^2)>0.5);
     case 'phase'
         mTheta = position(1);
         dTheta = position(2);
-        husimiPhase = atan2(O2,O1);
-        iSelect = find(husimiPhase>mTheta-dTheta/2 & ...
-            husimiPhase<mTheta+dTheta/2 & (O1.^2+O2.^2)>0.5);
-    case 'phaseAndAmplitude'
+        thetaMin = mTheta-dTheta/2;
+        thetaMax = mTheta+dTheta/2;
+        %husimiPhase = mod(atan2(O2,O1)-phiSimulation,2*pi);
+        husimiPhase = pi+atan2(O2,O1);
+        %thetaTotal = mod(husimiPhase + oTheta - oThetaMira,2*pi);
+
+         if thetaMin<0
+            if thetaMax <0
+                iSelect = find(husimiPhase>(thetaMin+2*pi) & ...
+           husimiPhase<(thetaMax+2*pi) & (O1.^2+O2.^2)>0.5) ; 
+            else
+            iSelect1 = find(husimiPhase>(thetaMin+2*pi)& (O1.^2+O2.^2)>0.5);
+            iSelect2 = find(husimiPhase<thetaMax & (O1.^2+O2.^2)>0.5);
+            iSelect = cat(1,iSelect1,iSelect2);
+
+            end
+        elseif thetaMax > 2*pi
+            if thetaMin > 2*pi
+                iSelect = find(husimiPhase>(thetaMin-2*pi) & ...
+            husimiPhase<(thetaMax-2*pi) & (O1.^2+O2.^2)>0.5);
+            else
+             iSelect1 = find(husimiPhase>thetaMin & (O1.^2+O2.^2)>0.5 ); 
+             iSelect2 = find(husimiPhase <(thetaMax-2*pi)&(O1.^2+O2.^2)>0.5);
+             iSelect = cat(1,iSelect1,iSelect2);
+            end
+        else
+             iSelect = find(husimiPhase>thetaMin & ...
+                husimiPhase<thetaMax & (O1.^2+O2.^2)>0.5);
+         end    
+    
+%     case 'phaseAndAmplitude'
+%         mTheta = position(1);
+%         dTheta = position(2);
+%         r = position(3);
+%         w = position(4);
+%         husimiPhase = pi+atan2(O2,O1);
+%         iSelect = find(husimiPhase>mTheta-dTheta/2 & ...
+%             husimiPhase<mTheta+dTheta/2 & (O1.^2+O2.^2)>0.5 & ...
+%             sqrt(O1.^2+O2.^2)>r-w/2 & sqrt(O1.^2+O2.^2)<r+w/2);
+     case 'phaseAndAmplitude'
         mTheta = position(1);
         dTheta = position(2);
+        thetaMin = mTheta-dTheta/2;
+        thetaMax = mTheta+dTheta/2;
         r = position(3);
         w = position(4);
-        husimiPhase = atan2(O2,O1);
-        iSelect = find(husimiPhase>mTheta-dTheta/2 & ...
-            husimiPhase<mTheta+dTheta/2 & (O1.^2+O2.^2)>0.5 & ...
+        husimiPhase = pi+atan2(O2,O1);
+        %husimiPhase = mod(atan2(O2,O1)-phiSimulation,2*pi);
+        %thetaTotal = mod(husimiPhase + oTheta - oThetaMira,2*pi);
+
+         if thetaMin<0
+            if thetaMax <0
+                iSelect = find(husimiPhase>(thetaMin+2*pi) & ...
+           husimiPhase<(thetaMax+2*pi) & (O1.^2+O2.^2)>0.5 & ...
+            sqrt(O1.^2+O2.^2)>r-w/2 & sqrt(O1.^2+O2.^2)<r+w/2); 
+            else
+            iSelect1 = find(husimiPhase>(thetaMin+2*pi)& (O1.^2+O2.^2)>0.5 & ...
+                sqrt(O1.^2+O2.^2)>r-w/2 & sqrt(O1.^2+O2.^2)<r+w/2);
+            iSelect2 = find(husimiPhase<thetaMax & (O1.^2+O2.^2)>0.5 & ...
+                sqrt(O1.^2+O2.^2)>r-w/2 & sqrt(O1.^2+O2.^2)<r+w/2);
+            iSelect = cat(1,iSelect1,iSelect2);
+
+            end
+        elseif thetaMax > 2*pi
+            if thetaMin > 2*pi
+                iSelect = find(husimiPhase>(thetaMin-2*pi) & ...
+            husimiPhase<(thetaMax-2*pi) & (O1.^2+O2.^2)>0.5 & ...
             sqrt(O1.^2+O2.^2)>r-w/2 & sqrt(O1.^2+O2.^2)<r+w/2);
+            else
+             iSelect1 = find(husimiPhase>thetaMin & (O1.^2+O2.^2)>0.5 & ...
+                sqrt(O1.^2+O2.^2)>r-w/2 & sqrt(O1.^2+O2.^2)<r+w/2); 
+             iSelect2 = find(husimiPhase <(thetaMax-2*pi)&(O1.^2+O2.^2)>0.5 & ...
+                sqrt(O1.^2+O2.^2)>r-w/2 & sqrt(O1.^2+O2.^2)<r+w/2);
+             iSelect = cat(1,iSelect1,iSelect2);
+            end
+        else
+             iSelect = find(husimiPhase>thetaMin & ...
+                husimiPhase<thetaMax & (O1.^2+O2.^2)>0.5 & ...
+                sqrt(O1.^2+O2.^2)>r-w/2 & sqrt(O1.^2+O2.^2)<r+w/2);
+         end    
     case 'Qline'
         Q = position(1); % line center
         w = position(2); % line width
@@ -81,5 +156,5 @@ if strcmp(plotopt,'show')
     assessTheta(theta,X,'Husimi',{O1,O2,iSelect},'VarBins', ...
         200,'PhaseBins',200,'Output',output,'Filename',filename);
 end
-
+close;
 end
